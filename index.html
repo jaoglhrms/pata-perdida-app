@@ -700,6 +700,16 @@ function authGo(id) {
 
 // Se já tem token salvo, vai direto pro feed
 window.addEventListener('DOMContentLoaded', () => {
+  // Captura token do Google OAuth no retorno
+  const hash = new URLSearchParams(window.location.hash.slice(1));
+  const token = hash.get('access_token');
+  if (token) {
+    accessToken = token;
+    localStorage.setItem('pp_token', token);
+    window.history.replaceState({}, '', window.location.pathname);
+    goToFeed();
+    return;
+  }
   if (accessToken) goToFeed();
 });
 
@@ -844,7 +854,11 @@ async function supabaseSignup(email, password, nome) {
 }
 
 async function handleGoogle() {
-  toast('Autenticação Google em breve após o deploy');
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(window.location.origin)}`, {
+    headers: { 'apikey': SUPABASE_ANON_KEY }
+  });
+  // Redireciona para o Google
+  window.location.href = `${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(window.location.origin)}`;
 }
 
 async function doLogin() {
