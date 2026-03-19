@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#2e1a0e">
+<title>Pata Perdida</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,500&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #fdf7f0; --surface: #fffcf8; --brown: #2e1a0e;
+  --terra: #bf5a2c; --terra-light: #f5e0d3; --terra-dark: #9e3e18;
+  --sand: #e8d5be; --muted: #9a7d6a; --border: #ecddd0;
+  --green: #3d7a52; --green-light: #d5ede0;
+  --red: #c0392b; --red-light: #fde8e6;
+  --yellow-light: #fef3d8;
+  --safe-bottom: env(safe-area-inset-bottom, 16px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; background: var(--brown); }
+body { font-family: 'Nunito', sans-serif; color: var(--brown); display: flex; justify-content: center; align-items: center; }
+
+/* ── SHELL ── */
+.phone-shell {
+  width: 393px; height: 852px; background: var(--bg); border-radius: 52px;
+  overflow: hidden; position: relative;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.5), inset 0 0 0 2px rgba(255,255,255,0.08);
+  display: flex; flex-direction: column;
+}
+@media (max-width: 430px) {
+  body { background: var(--bg); align-items: flex-start; }
+  .phone-shell { width: 100vw; height: 100dvh; border-radius: 0; box-shadow: none; }
+  .desktop-label { display: none; }
+}
+.desktop-label { position: fixed; top: 24px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.35); font-size: 0.75rem; letter-spacing: 1px; white-space: nowrap; }
+.notch { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 126px; height: 34px; background: var(--brown); border-radius: 20px; z-index: 100; }
+
+/* ── VIEWS ── */
+.view { display: none; flex-direction: column; height: 100%; }
+.view.active { display: flex; }
+
+/* ══════════════════════════
+   AUTH VIEW
+══════════════════════════ */
+.auth-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; }
+.auth-scroll::-webkit-scrollbar { display: none; }
+.auth-screen { display: none; flex-direction: column; min-height: 100%; }
+.auth-screen.active { display: flex; }
+
+/* Welcome hero */
+.welcome-hero {
+  background: linear-gradient(160deg, #2e1a0e 0%, #bf5a2c 58%, #f4a057 100%);
+  padding: 80px 32px 48px; text-align: center; position: relative; overflow: hidden; flex-shrink: 0;
+}
+.welcome-logo-mark {
+  width: 68px; height: 68px; background: rgba(255,255,255,0.14); border-radius: 22px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 18px; animation: float 3s ease-in-out infinite;
+}
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+.welcome-title { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 700; color: white; margin-bottom: 8px; line-height: 1.15; }
+.welcome-title em { font-style: italic; color: #f4c899; }
+.welcome-sub { font-size: 0.88rem; color: rgba(255,255,255,0.75); line-height: 1.6; max-width: 280px; margin: 0 auto; }
+.welcome-body { padding: 28px 24px 36px; display: flex; flex-direction: column; gap: 12px; }
+
+/* Auth header */
+.auth-header { padding: 56px 20px 18px; display: flex; align-items: center; gap: 12px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.back-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--sand); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; }
+.back-btn:active { transform: scale(0.9); }
+.auth-header-title { font-family: 'Fraunces', serif; font-size: 1.2rem; font-weight: 700; }
+.auth-body { padding: 24px 20px 36px; flex: 1; overflow-y: auto; }
+.auth-body::-webkit-scrollbar { display: none; }
+.auth-welcome { margin-bottom: 24px; }
+.auth-welcome h2 { font-family: 'Fraunces', serif; font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+.auth-welcome p { font-size: 0.85rem; color: var(--muted); line-height: 1.5; }
+
+/* Buttons */
+.btn-google { width: 100%; padding: 14px 20px; background: white; border: 1.5px solid var(--border); border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--brown); transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.btn-google:active { transform: scale(0.97); }
+.google-logo { width: 20px; height: 20px; flex-shrink: 0; }
+.btn-terra { width: 100%; padding: 14px; background: var(--terra); color: white; border: none; border-radius: 14px; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 800; transition: all 0.2s; }
+.btn-terra:active { transform: scale(0.97); background: var(--terra-dark); }
+.btn-outline { width: 100%; padding: 14px; background: var(--surface); color: var(--brown); border: 1.5px solid var(--border); border-radius: 14px; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 700; transition: all 0.2s; }
+.btn-outline:active { background: var(--sand); }
+.btn-ghost { width: 100%; padding: 14px; background: transparent; color: var(--muted); border: 1.5px solid var(--border); border-radius: 14px; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 700; transition: all 0.2s; }
+.btn-ghost:active { background: var(--sand); }
+.btn-main { width: 100%; padding: 15px; background: var(--terra); color: white; border: none; border-radius: 14px; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 800; transition: all 0.2s; margin-top: 4px; }
+.btn-main:active { transform: scale(0.97); background: var(--terra-dark); }
+.btn-main.loading { background: var(--sand); color: var(--muted); pointer-events: none; }
+
+.divider { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 0.78rem; font-weight: 600; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.welcome-note { text-align: center; font-size: 0.73rem; color: var(--muted); line-height: 1.5; }
+.welcome-note a { color: var(--terra); font-weight: 700; cursor: pointer; text-decoration: none; }
+
+/* Form fields */
+.field { margin-bottom: 16px; }
+.field label { display: block; font-size: 0.78rem; font-weight: 700; margin-bottom: 6px; }
+.input-wrap { position: relative; }
+.input-wrap input { width: 100%; padding: 13px 44px 13px 14px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 13px; outline: none; font-family: 'Nunito', sans-serif; font-size: 0.92rem; color: var(--brown); transition: border-color 0.2s, box-shadow 0.2s; }
+.input-wrap input:focus { border-color: var(--terra); box-shadow: 0 0 0 3px var(--terra-light); }
+.input-wrap input.error { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-light); }
+.input-wrap input.success { border-color: var(--green); box-shadow: 0 0 0 3px var(--green-light); }
+.input-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; width: 20px; height: 20px; }
+.input-icon svg { width: 18px; height: 18px; }
+.field-error { font-size: 0.72rem; color: var(--red); font-weight: 600; margin-top: 5px; display: none; }
+.field-error.show { display: block; }
+.forgot-link { text-align: right; font-size: 0.75rem; color: var(--terra); font-weight: 700; cursor: pointer; margin-top: -10px; margin-bottom: 16px; }
+.auth-switch { text-align: center; font-size: 0.82rem; color: var(--muted); margin-top: 18px; font-weight: 600; }
+.auth-switch span { color: var(--terra); font-weight: 800; cursor: pointer; }
+
+/* Password strength */
+.strength-bar { display: none; margin-top: 8px; }
+.strength-bar.show { display: block; }
+.strength-track { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 4px; }
+.strength-fill { height: 100%; border-radius: 4px; transition: width 0.3s, background 0.3s; width: 0%; }
+.strength-label { font-size: 0.7rem; font-weight: 700; }
+.pw-reqs { margin-top: 10px; display: none; flex-direction: column; gap: 5px; }
+.pw-reqs.show { display: flex; }
+.req { display: flex; align-items: center; gap: 7px; font-size: 0.73rem; color: var(--muted); font-weight: 600; transition: color 0.2s; }
+.req.ok { color: var(--green); }
+.req-dot { width: 16px; height: 16px; border-radius: 50%; background: var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; }
+.req-dot svg { width: 9px; height: 9px; opacity: 0; transition: opacity 0.2s; }
+.req.ok .req-dot { background: var(--green); }
+.req.ok .req-dot svg { opacity: 1; }
+
+/* Checkbox */
+.checkbox-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px; cursor: pointer; }
+.checkbox-box { width: 20px; height: 20px; flex-shrink: 0; border: 1.5px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; margin-top: 1px; }
+.checkbox-box svg { width: 11px; height: 11px; opacity: 0; transition: opacity 0.2s; }
+.checkbox-row.checked .checkbox-box { background: var(--terra); border-color: var(--terra); }
+.checkbox-row.checked .checkbox-box svg { opacity: 1; }
+.checkbox-text { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+.checkbox-text a { color: var(--terra); font-weight: 700; cursor: pointer; }
+
+/* Guest/success */
+.guest-banner { background: var(--yellow-light); border: 1.5px solid #f0d080; border-radius: 16px; padding: 14px 16px; display: flex; gap: 10px; align-items: flex-start; margin-bottom: 20px; }
+.guest-banner-text { font-size: 0.78rem; color: #7a5c10; line-height: 1.5; }
+.guest-banner-text strong { display: block; font-size: 0.83rem; margin-bottom: 2px; color: #5a3e05; }
+.perm-list { margin-bottom: 20px; }
+.perm-section-label { font-size: 0.72rem; font-weight: 700; color: var(--muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+.perm-item { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; font-weight: 600; padding: 5px 0; }
+.perm-item.ok { color: var(--green); }
+.perm-item.locked { color: var(--muted); }
+.perm-dot { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.perm-item.ok .perm-dot { background: var(--green-light); }
+.perm-item.locked .perm-dot { background: var(--sand); }
+.perm-dot svg { width: 11px; height: 11px; }
+.success-screen { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 28px; text-align: center; }
+.success-icon { width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+.success-icon.green { background: var(--green-light); }
+.success-icon.terra { background: var(--terra-light); }
+.success-icon svg { width: 32px; height: 32px; }
+@keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.success-title { font-family: 'Fraunces', serif; font-size: 1.6rem; font-weight: 700; margin-bottom: 8px; }
+.success-sub { font-size: 0.88rem; color: var(--muted); line-height: 1.6; margin-bottom: 24px; }
+.success-email-badge { background: var(--terra-light); color: var(--terra); padding: 10px 20px; border-radius: 20px; font-size: 0.82rem; font-weight: 700; margin-bottom: 24px; word-break: break-all; }
+
+/* ══════════════════════════
+   FEED VIEW
+══════════════════════════ */
+.feed-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; padding-bottom: calc(80px + var(--safe-bottom)); }
+.feed-scroll::-webkit-scrollbar { display: none; }
+
+/* Topbar */
+.topbar { position: sticky; top: 0; z-index: 40; background: var(--surface); padding: 52px 20px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.topbar-logo { font-family: 'Fraunces', serif; font-size: 1.35rem; font-weight: 700; color: var(--brown); display: flex; align-items: center; gap: 8px; }
+.topbar-logo svg { animation: sway 3s ease-in-out infinite; }
+@keyframes sway { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+.topbar-right { display: flex; gap: 8px; }
+.icon-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--sand); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.icon-btn:active { transform: scale(0.9); background: var(--border); }
+.icon-btn svg { width: 18px; height: 18px; }
+
+/* Alert */
+.alert-banner { margin: 12px 16px 0; background: linear-gradient(135deg, #bf5a2c, #9e3e18); color: white; border-radius: 18px; padding: 13px 14px; display: flex; align-items: center; gap: 12px; animation: fadeUp 0.5s ease both; }
+.alert-icon { width: 32px; height: 32px; background: rgba(255,255,255,0.18); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.alert-icon svg { width: 16px; height: 16px; }
+.alert-text { font-size: 0.82rem; line-height: 1.4; flex: 1; }
+.alert-text strong { font-size: 0.88rem; display: block; margin-bottom: 2px; }
+.alert-close { background: rgba(255,255,255,0.2); border: none; color: white; width: 26px; height: 26px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.alert-close svg { width: 12px; height: 12px; }
+
+/* Section */
+.section-header { display: flex; align-items: baseline; justify-content: space-between; padding: 16px 20px 10px; }
+.section-title { font-family: 'Fraunces', serif; font-size: 1.15rem; font-weight: 700; }
+.section-link { font-size: 0.78rem; color: var(--terra); font-weight: 700; cursor: pointer; }
+
+/* Pills */
+.pills { display: flex; gap: 8px; padding: 0 20px 14px; overflow-x: auto; scrollbar-width: none; }
+.pills::-webkit-scrollbar { display: none; }
+.pill { flex-shrink: 0; padding: 7px 16px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; background: var(--surface); border: 1.5px solid var(--border); color: var(--muted); cursor: pointer; transition: all 0.18s; display: flex; align-items: center; gap: 5px; }
+.pill.active { background: var(--brown); color: white; border-color: var(--brown); }
+.pill:active { transform: scale(0.94); }
+.pill svg { width: 10px; height: 10px; }
+
+/* Cards */
+.cards { display: flex; flex-direction: column; gap: 14px; padding: 0 16px; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.card { background: var(--surface); border: 1.5px solid var(--border); border-radius: 22px; overflow: hidden; animation: fadeUp 0.45s ease both; transition: transform 0.2s; }
+.card:active { transform: scale(0.98); }
+.card:nth-child(1) { animation-delay: 0.05s; }
+.card:nth-child(2) { animation-delay: 0.12s; }
+.card:nth-child(3) { animation-delay: 0.19s; }
+.card:nth-child(4) { animation-delay: 0.26s; }
+
+.card-top { display: flex; align-items: center; gap: 10px; padding: 12px 14px; }
+.avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--sand); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1.5px solid var(--border); }
+.avatar svg { width: 22px; height: 22px; }
+.card-user { flex: 1; }
+.card-user-name { font-size: 0.88rem; font-weight: 700; }
+.card-user-loc { font-size: 0.72rem; color: var(--muted); margin-top: 1px; display: flex; align-items: center; gap: 3px; }
+.card-user-loc svg { width: 10px; height: 10px; }
+.card-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+.badge-lost { background: var(--terra-light); color: var(--terra); }
+.badge-found { background: var(--green-light); color: var(--green); }
+
+.card-photo { width: 100%; height: 190px; background: linear-gradient(135deg, var(--sand) 0%, #d4bfa5 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; position: relative; }
+.card-photo svg { width: 52px; height: 52px; opacity: 0.35; }
+.card-photo-label { font-size: 0.72rem; color: var(--muted); font-weight: 600; }
+.card-photo-meta { position: absolute; bottom: 10px; left: 10px; background: rgba(46,26,14,0.72); color: white; font-size: 0.7rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; display: flex; align-items: center; gap: 4px; }
+.card-photo-meta svg { width: 10px; height: 10px; }
+.card-found-photo { background: linear-gradient(135deg, var(--green-light), #b8dfc8); }
+.card-found-photo svg { opacity: 0.5; }
+
+.card-info { padding: 12px 14px; }
+.card-name { font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 2px; }
+.card-breed { font-size: 0.78rem; color: var(--muted); margin-bottom: 8px; }
+.card-desc { font-size: 0.82rem; color: var(--brown); line-height: 1.5; opacity: 0.85; }
+
+.card-actions { display: flex; gap: 8px; padding: 0 14px 14px; }
+.btn-seen { flex: 1; background: var(--terra); color: white; border: none; padding: 12px; border-radius: 14px; font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 800; cursor: pointer; transition: all 0.18s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.btn-seen svg { width: 15px; height: 15px; }
+.btn-seen:active { transform: scale(0.96); background: var(--terra-dark); }
+.btn-icon { background: var(--sand); color: var(--brown); border: none; padding: 12px; border-radius: 14px; cursor: pointer; transition: all 0.18s; display: flex; align-items: center; justify-content: center; }
+.btn-icon svg { width: 17px; height: 17px; }
+.btn-icon:active { transform: scale(0.96); background: var(--border); }
+.btn-reunited { flex: 1; background: var(--green-light); color: var(--green); border: none; padding: 12px; border-radius: 14px; font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 800; cursor: default; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.btn-reunited svg { width: 15px; height: 15px; }
+
+/* Bottom nav */
+.bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; padding: 8px 0 calc(8px + var(--safe-bottom)); z-index: 40; }
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 5px 0; transition: transform 0.15s; }
+.nav-item:active { transform: scale(0.88); }
+.nav-icon-wrap { position: relative; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; }
+.nav-icon-wrap svg { width: 22px; height: 22px; stroke: var(--muted); transition: stroke 0.2s; }
+.nav-item.active .nav-icon-wrap svg { stroke: var(--terra); }
+.nav-badge { position: absolute; top: -3px; right: -5px; background: var(--terra); color: white; font-size: 0.52rem; font-weight: 800; width: 15px; height: 15px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--surface); }
+.nav-label { font-size: 0.62rem; font-weight: 700; color: var(--muted); transition: color 0.2s; }
+.nav-item.active .nav-label { color: var(--terra); }
+.nav-fab { flex-shrink: 0; width: 52px; display: flex; align-items: flex-start; justify-content: center; }
+.fab-btn { width: 52px; height: 52px; background: var(--terra); border: none; border-radius: 50%; color: white; cursor: pointer; box-shadow: 0 4px 16px rgba(191,90,44,0.45); transition: all 0.2s; display: flex; align-items: center; justify-content: center; margin-top: -12px; }
+.fab-btn svg { width: 22px; height: 22px; }
+.fab-btn:active { transform: scale(0.9); background: var(--terra-dark); }
+
+/* Modal sheet */
+.modal-overlay { position: absolute; inset: 0; background: rgba(46,26,14,0.55); backdrop-filter: blur(6px); z-index: 80; display: flex; flex-direction: column; justify-content: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal-sheet { background: var(--surface); border-radius: 28px 28px 0 0; padding: 20px 20px calc(20px + var(--safe-bottom)); transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.34,1.1,0.64,1); max-height: 90%; overflow-y: auto; }
+.modal-sheet::-webkit-scrollbar { display: none; }
+.modal-overlay.open .modal-sheet { transform: translateY(0); }
+.sheet-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 18px; }
+.sheet-title { font-family: 'Fraunces', serif; font-size: 1.2rem; font-weight: 700; margin-bottom: 4px; }
+.sheet-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 18px; }
+.form-row { margin-bottom: 13px; }
+.form-label { font-size: 0.78rem; font-weight: 700; margin-bottom: 5px; display: block; }
+.form-input { width: 100%; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 11px 14px; font-family: 'Nunito', sans-serif; font-size: 0.9rem; color: var(--brown); outline: none; transition: border-color 0.2s; }
+.form-input:focus { border-color: var(--terra); }
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 13px; }
+.photo-upload { width: 100%; height: 86px; background: var(--bg); border: 2px dashed var(--border); border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; cursor: pointer; margin-bottom: 14px; transition: border-color 0.2s; }
+.photo-upload svg { width: 24px; height: 24px; stroke: var(--muted); }
+.photo-upload span { font-size: 0.78rem; color: var(--muted); font-weight: 600; }
+.photo-upload:active { border-color: var(--terra); }
+.sheet-actions { display: flex; gap: 10px; margin-top: 8px; }
+.btn-cancel { flex: 1; background: var(--sand); border: none; padding: 14px; border-radius: 14px; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.9rem; cursor: pointer; color: var(--brown); }
+.btn-confirm { flex: 2; background: var(--terra); color: white; border: none; padding: 14px; border-radius: 14px; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.9rem; cursor: pointer; transition: background 0.18s; }
+.btn-confirm:active { background: var(--terra-dark); }
+
+/* Toast */
+.toast { position: absolute; bottom: 24px; left: 16px; right: 16px; background: var(--brown); color: white; padding: 14px 18px; border-radius: 16px; font-size: 0.85rem; font-weight: 600; z-index: 200; transform: translateY(20px); opacity: 0; transition: all 0.35s cubic-bezier(0.34,1.3,0.64,1); text-align: center; }
+.toast.show { transform: translateY(0); opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="desktop-label">Prévia mobile — abra no celular para ver em tela cheia</div>
+
+<div class="phone-shell">
+  <div class="notch"></div>
+
+  <!-- ════════════════════════
+       VIEW: AUTH
+  ════════════════════════ -->
+  <div class="view active" id="view-auth">
+    <div class="auth-scroll">
+
+      <!-- Tela boas-vindas -->
+      <div class="auth-screen active" id="s-welcome">
+        <div class="welcome-hero">
+          <div class="welcome-logo-mark">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+              <ellipse cx="11.5" cy="8.5" rx="4.5" ry="5.5" fill="white" opacity="0.93"/>
+              <ellipse cx="24.5" cy="8.5" rx="4.5" ry="5.5" fill="white" opacity="0.93"/>
+              <ellipse cx="5" cy="18" rx="3.8" ry="5" fill="white" opacity="0.93"/>
+              <ellipse cx="31" cy="18" rx="3.8" ry="5" fill="white" opacity="0.93"/>
+              <ellipse cx="18" cy="25" rx="10.5" ry="9" fill="white" opacity="0.93"/>
+            </svg>
+          </div>
+          <div class="welcome-title">Bem-vindo ao<br><em>Pata Perdida</em></div>
+          <div class="welcome-sub">Ajude tutores a reencontrar seus cães. Toda ajuda conta.</div>
+        </div>
+        <div class="welcome-body">
+          <button class="btn-google" onclick="handleGoogle()">
+            <svg class="google-logo" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            Continuar com Google
+          </button>
+          <div class="divider">ou</div>
+          <button class="btn-terra" onclick="authGo('s-register')">Criar conta com e-mail</button>
+          <button class="btn-outline" onclick="authGo('s-login')">Já tenho conta — Entrar</button>
+          <div class="divider">ou</div>
+          <button class="btn-ghost" onclick="authGo('s-guest')">Navegar sem conta</button>
+          <div class="welcome-note">
+            Ao criar uma conta você concorda com os
+            <a onclick="toast('Termos em breve')">Termos de Uso</a> e a
+            <a onclick="toast('Política em breve')">Política de Privacidade</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tela login -->
+      <div class="auth-screen" id="s-login">
+        <div class="auth-header">
+          <button class="back-btn" onclick="authGo('s-welcome')"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M11 14L6 9L11 4" stroke="#2e1a0e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="auth-header-title">Entrar</div>
+        </div>
+        <div class="auth-body">
+          <div class="auth-welcome"><h2>Olá de novo</h2><p>Entre para reportar cães perdidos e receber alertas perto de você.</p></div>
+          <button class="btn-google" style="margin-bottom:20px" onclick="handleGoogle()">
+            <svg class="google-logo" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            Entrar com Google
+          </button>
+          <div class="divider" style="margin-bottom:20px">ou com e-mail</div>
+          <div class="field"><label>E-mail</label><div class="input-wrap"><input type="email" id="l-email" placeholder="seu@email.com" oninput="vEmail('l-email','l-email-i','l-email-e')" autocomplete="email"><span class="input-icon" id="l-email-i"></span></div><div class="field-error" id="l-email-e">E-mail inválido</div></div>
+          <div class="field"><label>Senha</label><div class="input-wrap"><input type="password" id="l-pass" placeholder="Sua senha" oninput="vMin('l-pass','l-pass-i','l-pass-e',6,'Senha obrigatória')" autocomplete="current-password"><span class="input-icon" id="l-pass-i" onclick="togglePass('l-pass','l-pass-i')" style="cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke="#9a7d6a" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="field-error" id="l-pass-e">Senha obrigatória</div></div>
+          <div class="forgot-link" onclick="authGo('s-forgot')">Esqueci minha senha</div>
+          <button class="btn-main" id="btn-login" onclick="doLogin()">Entrar</button>
+          <div class="auth-switch">Não tem conta? <span onclick="authGo('s-register')">Criar conta</span></div>
+        </div>
+      </div>
+
+      <!-- Tela cadastro -->
+      <div class="auth-screen" id="s-register">
+        <div class="auth-header">
+          <button class="back-btn" onclick="authGo('s-welcome')"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M11 14L6 9L11 4" stroke="#2e1a0e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="auth-header-title">Criar conta</div>
+        </div>
+        <div class="auth-body">
+          <div class="auth-welcome"><h2>Vamos começar</h2><p>Crie sua conta para reportar cães perdidos e receber alertas perto de você.</p></div>
+          <div class="field"><label>Nome completo</label><div class="input-wrap"><input type="text" id="r-name" placeholder="Seu nome" oninput="vMin('r-name','r-name-i','r-name-e',3,'Nome muito curto')" autocomplete="name"><span class="input-icon" id="r-name-i"></span></div><div class="field-error" id="r-name-e">Nome deve ter pelo menos 3 caracteres</div></div>
+          <div class="field"><label>E-mail</label><div class="input-wrap"><input type="email" id="r-email" placeholder="seu@email.com" oninput="vEmail('r-email','r-email-i','r-email-e')" autocomplete="email"><span class="input-icon" id="r-email-i"></span></div><div class="field-error" id="r-email-e">E-mail inválido</div></div>
+          <div class="field"><label>Telefone / WhatsApp</label><div class="input-wrap"><input type="tel" id="r-phone" placeholder="(69) 9 9999-9999" oninput="maskPhone(this);vPhone()" autocomplete="tel"><span class="input-icon" id="r-phone-i"></span></div><div class="field-error" id="r-phone-e">Telefone inválido</div></div>
+          <div class="field">
+            <label>Senha</label>
+            <div class="input-wrap"><input type="password" id="r-pass" placeholder="Crie uma senha forte" oninput="checkStrength()" autocomplete="new-password"><span class="input-icon" id="r-pass-i" onclick="togglePass('r-pass','r-pass-i')" style="cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke="#9a7d6a" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+            <div class="field-error" id="r-pass-e">Senha não atende os requisitos</div>
+            <div class="strength-bar" id="strength-bar"><div class="strength-track"><div class="strength-fill" id="strength-fill"></div></div><div class="strength-label" id="strength-label"></div></div>
+            <div class="pw-reqs" id="pw-reqs">
+              <div class="req" id="req-len"><div class="req-dot"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Mínimo 8 caracteres</div>
+              <div class="req" id="req-upper"><div class="req-dot"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Uma letra maiúscula</div>
+              <div class="req" id="req-num"><div class="req-dot"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Um número</div>
+              <div class="req" id="req-special"><div class="req-dot"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Um caractere especial (!@#$...)</div>
+            </div>
+          </div>
+          <div class="field"><label>Confirmar senha</label><div class="input-wrap"><input type="password" id="r-confirm" placeholder="Repita a senha" oninput="vConfirm()" autocomplete="new-password"><span class="input-icon" id="r-confirm-i"></span></div><div class="field-error" id="r-confirm-e">As senhas não coincidem</div></div>
+          <div class="checkbox-row" id="terms-check" onclick="toggleCheck('terms-check')"><div class="checkbox-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="checkbox-text">Li e concordo com os <a onclick="event.stopPropagation();toast('Termos em breve')">Termos de Uso</a> e a <a onclick="event.stopPropagation();toast('Política em breve')">Política de Privacidade</a></div></div>
+          <div class="checkbox-row checked" id="news-check" onclick="toggleCheck('news-check')"><div class="checkbox-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="checkbox-text">Quero receber alertas de cães perdidos perto de mim por e-mail</div></div>
+          <button class="btn-main" id="btn-register" onclick="doRegister()">Criar minha conta</button>
+          <div class="auth-switch">Já tem conta? <span onclick="authGo('s-login')">Entrar</span></div>
+        </div>
+      </div>
+
+      <!-- Tela esqueci senha -->
+      <div class="auth-screen" id="s-forgot">
+        <div class="auth-header">
+          <button class="back-btn" onclick="authGo('s-login')"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M11 14L6 9L11 4" stroke="#2e1a0e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="auth-header-title">Recuperar senha</div>
+        </div>
+        <div class="auth-body">
+          <div class="auth-welcome"><h2>Sem problema</h2><p>Digite seu e-mail e enviaremos um link para criar uma nova senha.</p></div>
+          <div class="field"><label>E-mail cadastrado</label><div class="input-wrap"><input type="email" id="f-email" placeholder="seu@email.com" autocomplete="email"><span class="input-icon" id="f-email-i"></span></div><div class="field-error" id="f-email-e">E-mail inválido</div></div>
+          <button class="btn-main" onclick="doForgot()">Enviar link de recuperação</button>
+          <div class="auth-switch" style="margin-top:16px">Lembrou a senha? <span onclick="authGo('s-login')">Voltar ao login</span></div>
+        </div>
+      </div>
+
+      <!-- Tela convidado -->
+      <div class="auth-screen" id="s-guest">
+        <div class="auth-header">
+          <button class="back-btn" onclick="authGo('s-welcome')"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M11 14L6 9L11 4" stroke="#2e1a0e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="auth-header-title">Navegar sem conta</div>
+        </div>
+        <div class="auth-body">
+          <div class="auth-welcome"><h2>Bem-vindo, visitante</h2><p>Você pode navegar e reportar avistamentos. Algumas funções precisam de conta.</p></div>
+          <div class="guest-banner">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" style="flex-shrink:0;margin-top:2px"><path d="M10 2L2 17h16L10 2z" stroke="#d4871a" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 8v4M10 14v1" stroke="#d4871a" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <div class="guest-banner-text"><strong>Modo visitante</strong>Para publicar um cão perdido, receber alertas e ter histórico, crie uma conta — é rápido e gratuito.</div>
+          </div>
+          <div class="perm-list">
+            <div class="perm-section-label">O que você pode fazer</div>
+            <div class="perm-item ok"><div class="perm-dot"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#3d7a52" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Ver feed de cães perdidos</div>
+            <div class="perm-item ok"><div class="perm-dot"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#3d7a52" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Reportar avistamento</div>
+            <div class="perm-item ok"><div class="perm-dot"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#3d7a52" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Compartilhar posts</div>
+            <div class="perm-item locked"><div class="perm-dot"><svg viewBox="0 0 12 12" fill="none"><rect x="2.5" y="5" width="7" height="5.5" rx="1" stroke="#9a7d6a" stroke-width="1.4"/><path d="M4 5V3.5a2 2 0 114 0V5" stroke="#9a7d6a" stroke-width="1.4" stroke-linecap="round"/></svg></div>Publicar cão perdido</div>
+            <div class="perm-item locked"><div class="perm-dot"><svg viewBox="0 0 12 12" fill="none"><rect x="2.5" y="5" width="7" height="5.5" rx="1" stroke="#9a7d6a" stroke-width="1.4"/><path d="M4 5V3.5a2 2 0 114 0V5" stroke="#9a7d6a" stroke-width="1.4" stroke-linecap="round"/></svg></div>Alertas por localização</div>
+            <div class="perm-item locked"><div class="perm-dot"><svg viewBox="0 0 12 12" fill="none"><rect x="2.5" y="5" width="7" height="5.5" rx="1" stroke="#9a7d6a" stroke-width="1.4"/><path d="M4 5V3.5a2 2 0 114 0V5" stroke="#9a7d6a" stroke-width="1.4" stroke-linecap="round"/></svg></div>Histórico de posts</div>
+          </div>
+          <button class="btn-main" onclick="goToFeed()">Entrar como visitante</button>
+          <div class="auth-switch" style="margin-top:14px">Prefere criar conta? <span onclick="authGo('s-register')">Cadastrar grátis</span></div>
+        </div>
+      </div>
+
+      <!-- Tela sucesso cadastro -->
+      <div class="auth-screen" id="s-success">
+        <div class="success-screen">
+          <div class="success-icon green"><svg viewBox="0 0 32 32" fill="none"><path d="M6 16l7 7 13-13" stroke="#3d7a52" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="success-title">Conta criada!</div>
+          <div class="success-sub">Enviamos um e-mail de confirmação. Verifique sua caixa de entrada antes de entrar.</div>
+          <div class="success-email-badge" id="success-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="14677161547179757d783a777b79">[email&#160;protected]</a></div>
+          <button class="btn-main" style="width:100%;margin-bottom:12px" onclick="goToFeed()">Acessar o app</button>
+          <div style="font-size:0.78rem;color:var(--muted);text-align:center">Não recebeu? <span style="color:var(--terra);font-weight:700;cursor:pointer" onclick="toast('E-mail reenviado')">Reenviar</span></div>
+        </div>
+      </div>
+
+    </div><!-- /auth-scroll -->
+  </div><!-- /view-auth -->
+
+  <!-- ════════════════════════
+       VIEW: FEED
+  ════════════════════════ -->
+  <div class="view" id="view-feed">
+    <div class="feed-scroll">
+
+      <!-- Topbar -->
+      <div class="topbar">
+        <div class="topbar-logo">
+          <svg width="22" height="22" viewBox="0 0 36 36" fill="none">
+            <ellipse cx="11.5" cy="8.5" rx="4.5" ry="5.5" fill="#bf5a2c"/>
+            <ellipse cx="24.5" cy="8.5" rx="4.5" ry="5.5" fill="#bf5a2c"/>
+            <ellipse cx="5" cy="18" rx="3.8" ry="5" fill="#bf5a2c"/>
+            <ellipse cx="31" cy="18" rx="3.8" ry="5" fill="#bf5a2c"/>
+            <ellipse cx="18" cy="25" rx="10.5" ry="9" fill="#bf5a2c"/>
+          </svg>
+          Pata Perdida
+        </div>
+        <div class="topbar-right">
+          <button class="icon-btn" onclick="toast('Busca em breve')"><svg viewBox="0 0 24 24" fill="none" stroke="#2e1a0e" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></button>
+          <button class="icon-btn" onclick="toast('Sem notificações novas')"><svg viewBox="0 0 24 24" fill="none" stroke="#2e1a0e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></button>
+        </div>
+      </div>
+
+      <!-- Alert -->
+      <div class="alert-banner" id="alert-banner">
+        <div class="alert-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16v.01"/></svg></div>
+        <div class="alert-text"><strong>Avistamento perto de você</strong>Bolinha foi visto no Bairro Floresta há 20 min.</div>
+        <button class="alert-close" onclick="document.getElementById('alert-banner').remove()"><svg viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M2 2l8 8M10 2L2 10"/></svg></button>
+      </div>
+
+      <!-- Section + filters -->
+      <div class="section-header">
+        <div class="section-title">Perdidos agora</div>
+        <div class="section-link" onclick="toast('Ver todos em breve')">Ver todos</div>
+      </div>
+      <div class="pills">
+        <div class="pill active" onclick="setFilter(this,'all')">Todos</div>
+        <div class="pill" onclick="setFilter(this,'lost')">
+          <svg viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" fill="#bf5a2c"/></svg>
+          Perdidos
+        </div>
+        <div class="pill" onclick="setFilter(this,'found')">
+          <svg viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" fill="#3d7a52"/></svg>
+          Encontrados
+        </div>
+        <div class="pill" onclick="toast('Filtro por localização em breve')">
+          <svg viewBox="0 0 14 14" fill="none" stroke="#9a7d6a" stroke-width="1.5" stroke-linecap="round"><path d="M7 1C4.79 1 3 2.79 3 5c0 3.25 4 8 4 8s4-4.75 4-8c0-2.21-1.79-4-4-4z"/><circle cx="7" cy="5" r="1.2"/></svg>
+          Perto de mim
+        </div>
+      </div>
+
+      <!-- Cards -->
+      <div class="cards" id="cards">
+
+        <div class="card" data-status="lost">
+          <div class="card-top">
+            <div class="avatar"><svg viewBox="0 0 36 36" fill="none"><ellipse cx="11.5" cy="8.5" rx="4.5" ry="5.5" fill="#bf5a2c" opacity="0.5"/><ellipse cx="24.5" cy="8.5" rx="4.5" ry="5.5" fill="#bf5a2c" opacity="0.5"/><ellipse cx="5" cy="18" rx="3.8" ry="5" fill="#bf5a2c" opacity="0.5"/><ellipse cx="31" cy="18" rx="3.8" ry="5" fill="#bf5a2c" opacity="0.5"/><ellipse cx="18" cy="25" rx="10.5" ry="9" fill="#bf5a2c" opacity="0.5"/></svg></div>
+            <div class="card-user">
+              <div class="card-user-name">Bolinha</div>
+              <div class="card-user-loc"><svg viewBox="0 0 14 14" fill="none" stroke="#9a7d6a" stroke-width="1.5"><path d="M7 1C4.79 1 3 2.79 3 5c0 3.25 4 8 4 8s4-4.75 4-8c0-2.21-1.79-4-4-4z"/><circle cx="7" cy="5" r="1.2"/></svg>Bairro Floresta · Porto Velho</div>
+            </div>
+            <span class="card-badge badge-lost">Perdido</span>
+          </div>
+          <div class="card-photo">
+            <svg viewBox="0 0 36 36" fill="none"><ellipse cx="11.5" cy="8.5" rx="4.5" ry="5.5" fill="#9a7d6a"/><ellipse cx="24.5" cy="8.5" rx="4.5" ry="5.5" fill="#9a7d6a"/><ellipse cx="5" cy="18" rx="3.8" ry="5" fill="#9a7d6a"/><ellipse cx="31" cy="18" rx="3.8" ry="5" fill="#9a7d6a"/><ellipse cx="18" cy="25" rx="10.5" ry="9" fill="#9a7d6a"/></svg>
+            <div class="card-photo-label">Sem foto — toque para adicionar</div>
+            <div class="card-photo-meta"><svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.5"><rect x="1" y="3" width="12" height="10" rx="1.5"/><path d="M1 7h12M5 3V1M9 3V1"/></svg>Perdido há 2 dias</div>
+          </div>
+          <div class="card-info">
+            <div class="card-name">Bolinha</div>
+            <div class="card-breed">Vira-lata caramelo · Porte médio · Coleira azul</div>
+            <div class="card-desc">Muito dócil, responde pelo nome. Desapareceu próximo ao parque. Recompensa para quem encontrar.</div>
+          </div>
+          <div class="card-actions">
+            <button class="btn-seen" onclick="reportSeen('Bolinha')"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Vi esse cão</button>
+            <button class="btn-icon" onclick="shareCard('Bolinha')"><svg viewBox="0 0 24 24" fill="none" stroke="#2e1a0e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></button>
+            <button class="btn-icon" onclick="toast('Chat em breve')"><svg viewBox="0 0 24 24" fill="none" stroke="#2e1a0e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></button>
+          </div>
+        </div>
+
+        <div class="card" data-status="lost">
+          <div class="card-top">
+            <div class="avatar"><svg viewBox="0 0 36 36" fill="none"><ellipse cx="11.5" cy="8.5" rx="4.5" ry="5.5" fill="#bf5a2c" opacity="0.5"/><ellipse cx="24.5" cy="8.5" rx="4.5" ry="5.5" fill="#bf5a2c" opacity="0.5"/><ellipse cx="5" cy="18" rx="3.8" ry="5" fill="#bf5a2c" opacity="0.5"/><ellipse cx="31" cy="18" rx="3.8" ry="5" fill="#bf5a2c" opacity="0.5"/><ellipse cx="18" cy="25" rx="10.5" ry="9" fill="#bf5a2c" opacity="0.5"/></svg></div>
+            <div class="card-user">
+              <div class="card-user-name">Mel</div>
+              <div class="card-user-loc"><svg viewBox="0 0 14 14" fill="none" stroke="#9a7d6a" stroke-width="1.5"><path d="M7 1C4.79 1 3 2.79 3 5c0 3.25 4 8 4 8s4-4.75 4-8c0-2.21-1.79-4-4-4z"/><circle cx="7" cy="5" r="1.2"/></svg>Centro · Porto Velho</div>
+            </div>
+            <span class="card-badge badge-lost">Perdido</span>
+          </div>
+          <div class="card-photo">
+            <svg viewBox="0 0 36 36" fill="none"><ellipse cx="11.5" cy="8.5" rx="4.5" ry="5.5" fill="#9a7d6a"/><ellipse cx="24.5" cy="8.5" rx="4.5" ry="5.5" fill="#9a7d6a"/><ellipse cx="5" cy="18" rx="3.8" ry="5" fill="#9a7d6a"/><ellipse cx="31" cy="18" rx="3.8" ry="5" fill="#9a7d6a"/><ellipse cx="18" cy="25" rx="10.5" ry="9" fill="#9a7d6a"/></svg>
+            <div class="card-photo-label">Sem foto — toque para adicionar</div>
+            <div class="card-photo-meta"><svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.5"><rect x="1" y="3" width="12" height="10" rx="1.5"/><path d="M1 7h12M5 3V1M9 3V1"/></svg>Perdida há 5 horas</div>
+          </div>
+          <div class="card-info">
+            <div class="card-name">Mel</div>
+            <div class="card-breed">Poodle branca · Porte pequeno · Laçinho rosa</div>
+            <div class="card-desc">Com microchip. Desapareceu perto do mercado central. Idosa e precisa de medicação diária.</div>
+          </div>
+          <div class="card-actions">
+            <button class="btn-seen" onclick="reportSeen('Mel')"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Vi esse cão</button>
+            <button class="btn-icon" onclick="shareCard('Mel')"><svg viewBox="0 0 24 24" fill="none" stroke="#2e1a0e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></button>
+            <button class="btn-icon" onclick="toast('Chat em breve')"><svg viewBox="0 0 24 24" fill="none" stroke="#2e1a0e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></button>
+          </div>
+        </div>
+
+        <div class="card" data-status="found">
+          <div class="card-top">
+            <div class="avatar"><svg viewBox="0 0 36 36" fill="none"><ellipse cx="11.5" cy="8.5" rx="4.5" ry="5.5" fill="#3d7a52" opacity="0.5"/><ellipse cx="24.5" cy="8.5" rx="4.5" ry="5.5" fill="#3d7a52" opacity="0.5"/><ellipse cx="5" cy="18" rx="3.8" ry="5" fill="#3d7a52" opacity="0.5"/><ellipse cx="31" cy="18" rx="3.8" ry="5" fill="#3d7a52" opacity="0.5"/><ellipse cx="18" cy="25" rx="10.5" ry="9" fill="#3d7a52" opacity="0.5"/></svg></div>
+            <div class="card-user">
+              <div class="card-user-name">Rex</div>
+              <div class="card-user-loc"><svg viewBox="0 0 14 14" fill="none" stroke="#9a7d6a" stroke-width="1.5"><path d="M7 1C4.79 1 3 2.79 3 5c0 3.25 4 8 4 8s4-4.75 4-8c0-2.21-1.79-4-4-4z"/><circle cx="7" cy="5" r="1.2"/></svg>Arigolândia · Porto Velho</div>
+            </div>
+            <span class="card-badge badge-found">Encontrado</span>
+          </div>
+          <div class="card-photo card-found-photo">
+            <svg viewBox="0 0 36 36" fill="none"><ellipse cx="11.5" cy="8.5" rx="4.5" ry="5.5" fill="#3d7a52"/><ellipse cx="24.5" cy="8.5" rx="4.5" ry="5.5" fill="#3d7a52"/><ellipse cx="5" cy="18" rx="3.8" ry="5" fill="#3d7a52"/><ellipse cx="31" cy="18" rx="3.8" ry="5" fill="#3d7a52"/><ellipse cx="18" cy="25" rx="10.5" ry="9" fill="#3d7a52"/></svg>
+            <div class="card-photo-label">Voltou para casa</div>
+            <div class="card-photo-meta"><svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.5"><path d="M2 7l3.5 3.5L12 3"/></svg>Encontrado em 3 dias</div>
+          </div>
+          <div class="card-info">
+            <div class="card-name">Rex</div>
+            <div class="card-breed">Labrador · Porte grande</div>
+            <div class="card-desc">Rex voltou para casa graças a 4 avistamentos no app. Obrigado a todos que ajudaram.</div>
+          </div>
+          <div class="card-actions">
+            <button class="btn-reunited"><svg viewBox="0 0 24 24" fill="none" stroke="#3d7a52" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Família reunida</button>
+            <button class="btn-icon" onclick="shareCard('Rex')"><svg viewBox="0 0 24 24" fill="none" stroke="#2e1a0e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></button>
+          </div>
+        </div>
+
+        <div class="card" data-status="lost">
+          <div class="card-top">
+            <div class="avatar"><svg viewBox="0 0 36 36" fill="none"><ellipse cx="11.5" cy="8.5" rx="4.5" ry="5.5" fill="#bf5a2c" opacity="0.5"/><ellipse cx="24.5" cy="8.5" rx="4.5" ry="5.5" fill="#bf5a2c" opacity="0.5"/><ellipse cx="5" cy="18" rx="3.8" ry="5" fill="#bf5a2c" opacity="0.5"/><ellipse cx="31" cy="18" rx="3.8" ry="5" fill="#bf5a2c" opacity="0.5"/><ellipse cx="18" cy="25" rx="10.5" ry="9" fill="#bf5a2c" opacity="0.5"/></svg></div>
+            <div class="card-user">
+              <div class="card-user-name">Pipoca</div>
+              <div class="card-user-loc"><svg viewBox="0 0 14 14" fill="none" stroke="#9a7d6a" stroke-width="1.5"><path d="M7 1C4.79 1 3 2.79 3 5c0 3.25 4 8 4 8s4-4.75 4-8c0-2.21-1.79-4-4-4z"/><circle cx="7" cy="5" r="1.2"/></svg>Aponiã · Porto Velho</div>
+            </div>
+            <span class="card-badge badge-lost">Perdido</span>
+          </div>
+          <div class="card-photo">
+            <svg viewBox="0 0 36 36" fill="none"><ellipse cx="11.5" cy="8.5" rx="4.5" ry="5.5" fill="#9a7d6a"/><ellipse cx="24.5" cy="8.5" rx="4.5" ry="5.5" fill="#9a7d6a"/><ellipse cx="5" cy="18" rx="3.8" ry="5" fill="#9a7d6a"/><ellipse cx="31" cy="18" rx="3.8" ry="5" fill="#9a7d6a"/><ellipse cx="18" cy="25" rx="10.5" ry="9" fill="#9a7d6a"/></svg>
+            <div class="card-photo-label">Sem foto — toque para adicionar</div>
+            <div class="card-photo-meta"><svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.5"><rect x="1" y="3" width="12" height="10" rx="1.5"/><path d="M1 7h12M5 3V1M9 3V1"/></svg>Perdida há 3 dias</div>
+          </div>
+          <div class="card-info">
+            <div class="card-name">Pipoca</div>
+            <div class="card-breed">Shih Tzu branca · Porte pequeno · 12 anos</div>
+            <div class="card-desc">Muito meiga e idosa. Pelagem branca com manchas marrons. Precisa de medicação diária.</div>
+          </div>
+          <div class="card-actions">
+            <button class="btn-seen" onclick="reportSeen('Pipoca')"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Vi esse cão</button>
+            <button class="btn-icon" onclick="shareCard('Pipoca')"><svg viewBox="0 0 24 24" fill="none" stroke="#2e1a0e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></button>
+            <button class="btn-icon" onclick="toast('Chat em breve')"><svg viewBox="0 0 24 24" fill="none" stroke="#2e1a0e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></button>
+          </div>
+        </div>
+
+      </div>
+      <div style="height:16px"></div>
+    </div><!-- /feed-scroll -->
+
+    <!-- Bottom nav -->
+    <div class="bottom-nav">
+      <div class="nav-item active" onclick="setNav(this)">
+        <div class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+        <div class="nav-label">Início</div>
+      </div>
+      <div class="nav-item" onclick="setNav(this);toast('Mapa em breve')">
+        <div class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></div>
+        <div class="nav-label">Mapa</div>
+      </div>
+      <div class="nav-fab">
+        <button class="fab-btn" onclick="openModal()"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      </div>
+      <div class="nav-item" onclick="setNav(this);toast('Notificações em breve')">
+        <div class="nav-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <div class="nav-badge">3</div>
+        </div>
+        <div class="nav-label">Alertas</div>
+      </div>
+      <div class="nav-item" onclick="setNav(this);toast('Perfil em breve')">
+        <div class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <div class="nav-label">Perfil</div>
+      </div>
+    </div>
+
+    <!-- Modal reportar -->
+    <div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
+      <div class="modal-sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title">Reportar cão perdido</div>
+        <div class="sheet-sub">Quanto mais detalhes, mais rápido a comunidade ajuda.</div>
+        <div class="photo-upload" onclick="toast('Upload de foto em breve')">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Toque para adicionar foto</span>
+        </div>
+        <div class="form-row-2">
+          <div><label class="form-label">Nome do cão</label><input class="form-input" type="text" placeholder="Ex: Bolinha" id="m-name"></div>
+          <div><label class="form-label">Raça</label><input class="form-input" type="text" placeholder="Ex: Vira-lata" id="m-raca"></div>
+        </div>
+        <div class="form-row"><label class="form-label">Bairro onde sumiu</label><input class="form-input" type="text" placeholder="Ex: Bairro Floresta" id="m-bairro"></div>
+        <div class="form-row"><label class="form-label">Seu WhatsApp</label><input class="form-input" type="tel" placeholder="(69) 9 9999-9999" id="m-phone"></div>
+        <div class="form-row"><label class="form-label">Descrição</label><input class="form-input" type="text" placeholder="Cor, coleira, porte, sinais especiais..." id="m-desc"></div>
+        <div class="sheet-actions">
+          <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+          <button class="btn-confirm" onclick="submitReport()">Publicar aviso</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /view-feed -->
+
+  <div class="toast" id="toast-el"></div>
+</div><!-- /phone-shell -->
+
+<script>
+// ══════════════════════════════════════════════
+//  CONFIGURAÇÃO — altere apenas esta linha
+//  Em produção: troque pela URL do Railway
+// ══════════════════════════════════════════════
+const API_URL = 'https://pata-perdida-api-production.up.railway.app';
+
+// ── Estado global ──
+let accessToken = localStorage.getItem('pp_token') || null;
+let currentFilter = 'all';
+
+// ══════════════════════════════════════════════
+//  UTILITÁRIOS
+// ══════════════════════════════════════════════
+let tt;
+function toast(msg) {
+  const t = document.getElementById('toast-el');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+async function api(path, options = {}) {
+  const headers = { 'Content-Type': 'application/json', ...options.headers };
+  if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+  const res = await fetch(API_URL + path, { ...options, headers });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.erro || 'Erro na requisição');
+  return data;
+}
+
+// ══════════════════════════════════════════════
+//  NAVEGAÇÃO
+// ══════════════════════════════════════════════
+function goToFeed() {
+  document.getElementById('view-auth').classList.remove('active');
+  document.getElementById('view-feed').classList.add('active');
+  carregarFeed();
+}
+
+function authGo(id) {
+  document.querySelectorAll('.auth-screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelector('.auth-scroll').scrollTo(0, 0);
+}
+
+// Se já tem token salvo, vai direto pro feed
+window.addEventListener('DOMContentLoaded', () => {
+  if (accessToken) goToFeed();
+});
+
+// ══════════════════════════════════════════════
+//  FEED — carrega cães da API
+// ══════════════════════════════════════════════
+async function carregarFeed(filtro = 'all') {
+  const container = document.getElementById('cards');
+  container.innerHTML = `
+    <div style="padding:40px 0;text-align:center;color:var(--muted);font-size:0.88rem">
+      Carregando...
+    </div>`;
+
+  try {
+    const params = filtro !== 'all' ? `?status=${filtro}` : '';
+    const { caes } = await api(`/caes${params}`);
+
+    if (!caes || caes.length === 0) {
+      container.innerHTML = `
+        <div style="padding:48px 24px;text-align:center;color:var(--muted)">
+          <div style="font-size:2rem;margin-bottom:12px;opacity:0.4">
+            <svg width="48" height="48" viewBox="0 0 36 36" fill="none" style="margin:0 auto;display:block">
+              <ellipse cx="11.5" cy="8.5" rx="4.5" ry="5.5" fill="#9a7d6a" opacity="0.4"/>
+              <ellipse cx="24.5" cy="8.5" rx="4.5" ry="5.5" fill="#9a7d6a" opacity="0.4"/>
+              <ellipse cx="5" cy="18" rx="3.8" ry="5" fill="#9a7d6a" opacity="0.4"/>
+              <ellipse cx="31" cy="18" rx="3.8" ry="5" fill="#9a7d6a" opacity="0.4"/>
+              <ellipse cx="18" cy="25" rx="10.5" ry="9" fill="#9a7d6a" opacity="0.4"/>
+            </svg>
+          </div>
+          <div style="font-family:'Fraunces',serif;font-size:1.1rem;font-weight:700;margin-bottom:6px;color:var(--brown)">Nenhum cão encontrado</div>
+          <div style="font-size:0.82rem">Seja o primeiro a reportar um cão perdido.</div>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = caes.map((cao, i) => renderCard(cao, i)).join('');
+  } catch (err) {
+    container.innerHTML = `
+      <div style="padding:32px 20px;text-align:center;color:var(--red);font-size:0.85rem">
+        Não foi possível carregar os dados.<br>Verifique se a API está rodando.
+      </div>`;
+  }
+}
+
+function renderCard(cao, i) {
+  const encontrado = cao.status === 'encontrado';
+  const temFoto = cao.foto_url;
+  const tutor = cao.usuarios?.nome || 'Tutor';
+  const delay = `animation-delay:${0.05 + i * 0.07}s`;
+
+  const fotoHtml = temFoto
+    ? `<img src="${cao.foto_url}" style="width:100%;height:190px;object-fit:cover;display:block" alt="${cao.nome}">`
+    : `<div class="card-photo ${encontrado ? 'card-found-photo' : ''}">
+        <svg viewBox="0 0 36 36" fill="none"><ellipse cx="11.5" cy="8.5" rx="4.5" ry="5.5" fill="${encontrado ? '#3d7a52' : '#9a7d6a'}"/><ellipse cx="24.5" cy="8.5" rx="4.5" ry="5.5" fill="${encontrado ? '#3d7a52' : '#9a7d6a'}"/><ellipse cx="5" cy="18" rx="3.8" ry="5" fill="${encontrado ? '#3d7a52' : '#9a7d6a'}"/><ellipse cx="31" cy="18" rx="3.8" ry="5" fill="${encontrado ? '#3d7a52' : '#9a7d6a'}"/><ellipse cx="18" cy="25" rx="10.5" ry="9" fill="${encontrado ? '#3d7a52' : '#9a7d6a'}"/></svg>
+        <div class="card-photo-label">${encontrado ? 'Voltou para casa' : 'Sem foto'}</div>
+        <div class="card-photo-meta">
+          <svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.5"><rect x="1" y="3" width="12" height="10" rx="1.5"/><path d="M1 7h12M5 3V1M9 3V1"/></svg>
+          ${encontrado ? 'Encontrado' : tempoRelativo(cao.criado_em)}
+        </div>
+       </div>`;
+
+  const acoesHtml = encontrado
+    ? `<button class="btn-reunited">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#3d7a52" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Família reunida
+       </button>
+       <button class="btn-icon" onclick="shareCard('${cao.nome}','${cao.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#2e1a0e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+       </button>`
+    : `<button class="btn-seen" onclick="reportSeen('${cao.nome}','${cao.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        Vi esse cão
+       </button>
+       <button class="btn-icon" onclick="shareCard('${cao.nome}','${cao.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#2e1a0e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+       </button>
+       <button class="btn-icon" onclick="toast('Chat em breve')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#2e1a0e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+       </button>`;
+
+  return `
+    <div class="card" data-status="${cao.status}" style="${delay}">
+      <div class="card-top">
+        <div class="avatar">
+          <svg viewBox="0 0 36 36" fill="none"><ellipse cx="11.5" cy="8.5" rx="4.5" ry="5.5" fill="${encontrado ? '#3d7a52' : '#bf5a2c'}" opacity="0.5"/><ellipse cx="24.5" cy="8.5" rx="4.5" ry="5.5" fill="${encontrado ? '#3d7a52' : '#bf5a2c'}" opacity="0.5"/><ellipse cx="5" cy="18" rx="3.8" ry="5" fill="${encontrado ? '#3d7a52' : '#bf5a2c'}" opacity="0.5"/><ellipse cx="31" cy="18" rx="3.8" ry="5" fill="${encontrado ? '#3d7a52' : '#bf5a2c'}" opacity="0.5"/><ellipse cx="18" cy="25" rx="10.5" ry="9" fill="${encontrado ? '#3d7a52' : '#bf5a2c'}" opacity="0.5"/></svg>
+        </div>
+        <div class="card-user">
+          <div class="card-user-name">${cao.nome}</div>
+          <div class="card-user-loc">
+            <svg viewBox="0 0 14 14" fill="none" stroke="#9a7d6a" stroke-width="1.5"><path d="M7 1C4.79 1 3 2.79 3 5c0 3.25 4 8 4 8s4-4.75 4-8c0-2.21-1.79-4-4-4z"/><circle cx="7" cy="5" r="1.2"/></svg>
+            ${cao.bairro} · ${cao.cidade}
+          </div>
+        </div>
+        <span class="card-badge ${encontrado ? 'badge-found' : 'badge-lost'}">${encontrado ? 'Encontrado' : 'Perdido'}</span>
+      </div>
+      ${fotoHtml}
+      <div class="card-info">
+        <div class="card-name">${cao.nome}</div>
+        <div class="card-breed">${[cao.raca, cao.porte ? 'Porte '+cao.porte : null].filter(Boolean).join(' · ')}</div>
+        <div class="card-desc">${cao.descricao || 'Sem descrição adicional.'}</div>
+      </div>
+      <div class="card-actions">${acoesHtml}</div>
+    </div>`;
+}
+
+function tempoRelativo(dataStr) {
+  const diff = Math.floor((Date.now() - new Date(dataStr)) / 1000);
+  if (diff < 60) return 'Agora mesmo';
+  if (diff < 3600) return `Há ${Math.floor(diff/60)} min`;
+  if (diff < 86400) return `Há ${Math.floor(diff/3600)}h`;
+  return `Há ${Math.floor(diff/86400)} dia(s)`;
+}
+
+// ══════════════════════════════════════════════
+//  AUTH — login e cadastro reais via Supabase
+// ══════════════════════════════════════════════
+
+// Substitua pelos valores do seu projeto Supabase
+const SUPABASE_URL = 'https://mkwizuggmofsuyvgksas.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rd2l6dWdnbW9mc3V5dmdrc2FzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4Nzg5NzEsImV4cCI6MjA4OTQ1NDk3MX0.HRYQxNNaDSYc7IWKHNp8h4BGGmotqW9Anq5hlvPZD04';
+
+async function supabaseAuth(email, password) {
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+    body: JSON.stringify({ email, password })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error_description || 'Credenciais inválidas');
+  return data.access_token;
+}
+
+async function supabaseSignup(email, password, nome) {
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+    body: JSON.stringify({ email, password, data: { full_name: nome } })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error_description || 'Erro ao criar conta');
+  return data;
+}
+
+async function handleGoogle() {
+  toast('Autenticação Google em breve após o deploy');
+}
+
+async function doLogin() {
+  const email = document.getElementById('l-email').value;
+  const pass  = document.getElementById('l-pass').value;
+  vEmail('l-email','l-email-i','l-email-e');
+  vMin('l-pass','l-pass-i','l-pass-e', 6);
+  if (!isEmail(email) || pass.length < 6) { toast('Corrija os campos antes de continuar'); return; }
+
+  const btn = document.getElementById('btn-login');
+  btn.classList.add('loading'); btn.textContent = 'Entrando...';
+  try {
+    accessToken = await supabaseAuth(email, pass);
+    localStorage.setItem('pp_token', accessToken);
+    btn.classList.remove('loading'); btn.textContent = 'Entrar';
+    goToFeed();
+  } catch (err) {
+    btn.classList.remove('loading'); btn.textContent = 'Entrar';
+    toast(err.message);
+  }
+}
+
+async function doRegister() {
+  vMin('r-name','r-name-i','r-name-e',3);
+  vEmail('r-email','r-email-i','r-email-e');
+  vPhone(); checkStrength(); vConfirm();
+
+  const nome    = document.getElementById('r-name').value.trim();
+  const email   = document.getElementById('r-email').value;
+  const phone   = document.getElementById('r-phone').value.replace(/\D/g,'');
+  const pass    = document.getElementById('r-pass').value;
+  const confirm = document.getElementById('r-confirm').value;
+  const terms   = document.getElementById('terms-check').classList.contains('checked');
+
+  if (nome.length < 3)  { toast('Preencha seu nome completo'); return; }
+  if (!isEmail(email))  { toast('E-mail inválido'); return; }
+  if (phone.length < 10){ toast('Telefone inválido'); return; }
+  if (!/(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}/.test(pass)) { toast('Senha não atende os requisitos'); return; }
+  if (pass !== confirm) { toast('As senhas não coincidem'); return; }
+  if (!terms)           { toast('Aceite os Termos de Uso para continuar'); return; }
+
+  const btn = document.getElementById('btn-register');
+  btn.classList.add('loading'); btn.textContent = 'Criando conta...';
+  try {
+    await supabaseSignup(email, pass, nome);
+    btn.classList.remove('loading'); btn.textContent = 'Criar minha conta';
+    document.getElementById('success-email').textContent = email;
+    authGo('s-success');
+  } catch (err) {
+    btn.classList.remove('loading'); btn.textContent = 'Criar minha conta';
+    toast(err.message);
+  }
+}
+
+async function doForgot() {
+  const email = document.getElementById('f-email').value;
+  if (!isEmail(email)) { toast('Digite um e-mail válido'); return; }
+  try {
+    await fetch(`${SUPABASE_URL}/auth/v1/recover`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+      body: JSON.stringify({ email })
+    });
+    toast('Link enviado para ' + email);
+    setTimeout(() => authGo('s-login'), 2200);
+  } catch {
+    toast('Não foi possível enviar o e-mail');
+  }
+}
+
+// ══════════════════════════════════════════════
+//  FEED ACTIONS
+// ══════════════════════════════════════════════
+function openModal() { document.getElementById('modal').classList.add('open'); }
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function closeModalOutside(e) { if (e.target === document.getElementById('modal')) closeModal(); }
+
+async function submitReport() {
+  const nome     = document.getElementById('m-name').value.trim();
+  const raca     = document.getElementById('m-raca').value.trim();
+  const bairro   = document.getElementById('m-bairro').value.trim();
+  const descricao= document.getElementById('m-desc').value.trim();
+
+  if (!nome)   { toast('Informe o nome do cachorro'); return; }
+  if (!bairro) { toast('Informe o bairro'); return; }
+  if (!accessToken) { toast('Faça login para publicar um cão perdido'); closeModal(); authGo('s-login'); return; }
+
+  const btn = document.querySelector('.btn-confirm');
+  btn.textContent = 'Publicando...'; btn.disabled = true;
+
+  try {
+    await api('/caes', {
+      method: 'POST',
+      body: JSON.stringify({ nome, raca, bairro, descricao, cidade: 'Porto Velho' })
+    });
+    closeModal();
+    toast('"' + nome + '" publicado. A comunidade vai ajudar.');
+    // Limpa os campos
+    ['m-name','m-raca','m-bairro','m-desc'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+    carregarFeed(currentFilter);
+  } catch (err) {
+    toast(err.message);
+  } finally {
+    btn.textContent = 'Publicar aviso'; btn.disabled = false;
+  }
+}
+
+async function reportSeen(nome, caoId) {
+  const bairro = prompt(`Em qual bairro você viu ${nome}?`);
+  if (!bairro) return;
+  try {
+    await api(`/caes/${caoId}/avistamentos`, {
+      method: 'POST',
+      body: JSON.stringify({ bairro, descricao: `Avistado em ${bairro}` })
+    });
+    toast('Aviso enviado. O tutor de ' + nome + ' será notificado.');
+  } catch (err) {
+    toast('Não foi possível enviar o avistamento');
+  }
+}
+
+function shareCard(nome, id) {
+  const url = `${window.location.origin}?cao=${id}`;
+  if (navigator.share) {
+    navigator.share({ title: `${nome} está perdido`, text: `Ajude a encontrar ${nome}!`, url });
+  } else {
+    navigator.clipboard.writeText(url).then(() => toast('Link copiado para compartilhar'));
+  }
+}
+
+function setFilter(chip, filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  chip.classList.add('active');
+  carregarFeed(filter);
+}
+
+// ══════════════════════════════════════════════
+//  HELPERS DE FORMULÁRIO (inalterados)
+// ══════════════════════════════════════════════
+function togglePass(inputId, iconId) {
+  const input = document.getElementById(inputId), span = document.getElementById(iconId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    span.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#9a7d6a" stroke-width="2" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+  } else {
+    input.type = 'password';
+    span.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#9a7d6a" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+  }
+}
+function toggleCheck(id) { document.getElementById(id).classList.toggle('checked'); }
+function maskPhone(input) {
+  let v = input.value.replace(/\D/g,'').slice(0,11);
+  if (v.length > 2) v = '('+v.slice(0,2)+') '+v.slice(2);
+  if (v.length > 10) v = v.slice(0,10)+'-'+v.slice(10);
+  input.value = v;
+}
+function isEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+const OK  = `<svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" fill="#3d7a52"/><path d="M5 9l3 3 5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const ERR = `<svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" fill="#c0392b"/><path d="M6 6l6 6M12 6l-6 6" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+function setF(inputId, iconId, errId, ok) {
+  const inp=document.getElementById(inputId), icon=document.getElementById(iconId), err=document.getElementById(errId);
+  inp.className=inp.className.replace(/\berror\b|\bsuccess\b/g,'').trim();
+  if (ok===true) { inp.classList.add('success'); icon.innerHTML=OK; err.classList.remove('show'); }
+  else if (ok===false) { inp.classList.add('error'); icon.innerHTML=ERR; err.classList.add('show'); }
+  else { icon.innerHTML=''; err.classList.remove('show'); }
+}
+function vEmail(i,ic,e) { const v=document.getElementById(i).value; if(!v) return setF(i,ic,e,null); setF(i,ic,e,isEmail(v)); }
+function vMin(i,ic,e,min) { const v=document.getElementById(i).value; if(!v) return setF(i,ic,e,null); setF(i,ic,e,v.trim().length>=min); }
+function vPhone() { const v=document.getElementById('r-phone').value.replace(/\D/g,''); if(!v) return setF('r-phone','r-phone-i','r-phone-e',null); setF('r-phone','r-phone-i','r-phone-e',v.length>=10); }
+function vConfirm() { const p=document.getElementById('r-pass').value, c=document.getElementById('r-confirm').value; if(!c) return setF('r-confirm','r-confirm-i','r-confirm-e',null); setF('r-confirm','r-confirm-i','r-confirm-e',p===c); }
+function checkStrength() {
+  const v=document.getElementById('r-pass').value;
+  const bar=document.getElementById('strength-bar'), fill=document.getElementById('strength-fill'), label=document.getElementById('strength-label'), reqs=document.getElementById('pw-reqs');
+  if (!v) { bar.classList.remove('show'); reqs.classList.remove('show'); return; }
+  bar.classList.add('show'); reqs.classList.add('show');
+  const len=v.length>=8, upper=/[A-Z]/.test(v), num=/[0-9]/.test(v), special=/[!@#$%^&*(),.?":{}|<>]/.test(v);
+  ['req-len','req-upper','req-num','req-special'].forEach((id,i)=>{ document.getElementById(id).className='req'+([len,upper,num,special][i]?' ok':''); });
+  const score=[len,upper,num,special].filter(Boolean).length;
+  const cfgs=[{w:'20%',bg:'#c0392b',t:'Muito fraca',c:'#c0392b'},{w:'40%',bg:'#e67e22',t:'Fraca',c:'#e67e22'},{w:'65%',bg:'#d4871a',t:'Média',c:'#d4871a'},{w:'100%',bg:'#3d7a52',t:'Forte',c:'#3d7a52'}];
+  const cfg=cfgs[score-1]||cfgs[0]; fill.style.width=cfg.w; fill.style.background=cfg.bg; label.textContent=cfg.t; label.style.color=cfg.c;
+  setF('r-pass','r-pass-i','r-pass-e',(len&&upper&&num&&special)?true:null);
+  vConfirm();
+}
+function setNav(item) {
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  item.classList.add('active');
+}
+</script>
+</body>
+</html>
