@@ -911,19 +911,22 @@ async function doRegister() {
   }
 }
 
-async function doForgot() {
-  const email = document.getElementById('f-email').value;
-  if (!isEmail(email)) { toast('Digite um e-mail válido'); return; }
-  try {
-    await fetch(`${SUPABASE_URL}/auth/v1/recover`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
-      body: JSON.stringify({ email })
-    });
-    toast('Link enviado para ' + email);
-    setTimeout(() => authGo('s-login'), 2200);
-  } catch {
-    toast('Não foi possível enviar o e-mail');
+async function api(path, options = {}) {
+  const headers = { 'Content-Type': 'application/json', ...options.headers };
+  if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+  const res = await fetch(API_URL + path, { ...options, headers });
+  const data = await res.json();
+  if (res.status === 401) {
+    // Token expirado — limpa e manda para o login
+    accessToken = null;
+    localStorage.removeItem('pp_token');
+    toast('Sessão expirada. Faça login novamente.');
+    setTimeout(() => {
+      document.getElementById('view-feed').classList.remove('active');
+      document.getElementById('view-auth').classList.add('active');
+      authGo('s-login');
+    }, 1500);
+    throw new Error('Sessão expirada');
   }
 }
 
