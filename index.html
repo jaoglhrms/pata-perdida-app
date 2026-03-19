@@ -705,13 +705,17 @@ window.addEventListener('DOMContentLoaded', () => {
   // Captura token do Google OAuth no retorno
   const hash = new URLSearchParams(window.location.hash.slice(1));
   const token = hash.get('access_token');
+  const refresh = hash.get('refresh_token');
+
   if (token) {
     accessToken = token;
     localStorage.setItem('pp_token', token);
+    if (refresh) localStorage.setItem('pp_refresh', refresh);
     window.history.replaceState({}, '', window.location.pathname);
     goToFeed();
     return;
   }
+
   if (accessToken) goToFeed();
 });
 
@@ -916,10 +920,35 @@ async function api(path, options = {}) {
   if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
   const res = await fetch(API_URL + path, { ...options, headers });
   const data = await res.json();
+
   if (res.status === 401) {
-    // Token expirado — limpa e manda para o login
+    // Tenta renovar com refresh_token
+    const refresh = localStorage.getItem('pp_refresh');
+    if (refresh) {
+      try {
+        const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+          body: JSON.stringify({ refresh_token: refresh })
+        });
+        const d = await r.json();
+        if (d.access_token) {
+          accessToken = d.access_token;
+          localStorage.setItem('pp_token', d.access_token);
+          if (d.refresh_token) localStorage.setItem('pp_refresh', d.refresh_token);
+          // Tenta a requisição original novamente com o novo token
+          headers['Authorization'] = `Bearer ${accessToken}`;
+          const retry = await fetch(API_URL + path, { ...options, headers });
+          const retryData = await retry.json();
+          if (!retry.ok) throw new Error(retryData.erro || 'Erro na requisição');
+          return retryData;
+        }
+      } catch {}
+    }
+    // Sem refresh_token válido — manda para login
     accessToken = null;
     localStorage.removeItem('pp_token');
+    localStorage.removeItem('pp_refresh');
     toast('Sessão expirada. Faça login novamente.');
     setTimeout(() => {
       document.getElementById('view-feed').classList.remove('active');
@@ -928,7 +957,11 @@ async function api(path, options = {}) {
     }, 1500);
     throw new Error('Sessão expirada');
   }
+
+  if (!res.ok) throw new Error(data.erro || 'Erro na requisição');
+  return data;
 }
+
 
 // ══════════════════════════════════════════════
 //  FEED ACTIONS
