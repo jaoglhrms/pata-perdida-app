@@ -630,10 +630,12 @@ body { font-family: 'Nunito', sans-serif; color: var(--brown); display: flex; ju
         <div class="sheet-handle"></div>
         <div class="sheet-title">Reportar cão perdido</div>
         <div class="sheet-sub">Quanto mais detalhes, mais rápido a comunidade ajuda.</div>
-        <div class="photo-upload" onclick="toast('Upload de foto em breve')">
+        <div class="photo-upload" onclick="document.getElementById('foto-input').click()">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          <span>Toque para adicionar foto</span>
+            <span id="foto-label">Toque para adicionar foto</span>
         </div>
+<input type="file" id="foto-input" accept="image/*" style="display:none" onchange="previewFoto(this)">
+<img id="foto-preview" style="display:none;width:100%;height:140px;object-fit:cover;border-radius:14px;margin-bottom:14px">
         <div class="form-row-2">
           <div><label class="form-label">Nome do cão</label><input class="form-input" type="text" placeholder="Ex: Bolinha" id="m-name"></div>
           <div><label class="form-label">Raça</label><input class="form-input" type="text" placeholder="Ex: Vira-lata" id="m-raca"></div>
